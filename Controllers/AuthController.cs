@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using backendcafe.DTO;
 using backendcafe.Services;
 
-namespace MyApiProject.Controllers
+namespace backendcafe.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

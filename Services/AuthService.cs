@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using backendcafe.Data;
 using backendcafe.DTO;
 using backendcafe.Models;
+using backendcafe.Utils;
 
 namespace backendcafe.Services
 {
@@ -23,16 +24,14 @@ namespace backendcafe.Services
         public async Task<UserDTO> Register(RegisterDTO registerDto)
         {
             if (await UserExists(registerDto.Username))
-                return null;
-
-            using var hmac = new HMACSHA512();
+                throw new Exception("Username already exists");
 
             var user = new User
             {
                 Username = registerDto.Username.ToLower(),
                 Email = registerDto.Email.ToLower(),
-                PasswordHash = ComputeHash(registerDto.Password),
-                Role = "User" // Default role
+                PasswordHash = HashUtility.ComputeHash(registerDto.Password),
+                Role = Role.Admin
             };
 
             _context.Users.Add(user);
@@ -53,10 +52,11 @@ namespace backendcafe.Services
             var user = await _context.Users
                 .SingleOrDefaultAsync(x => x.Username == loginDto.Username.ToLower());
 
-            if (user == null) return null;
+            if (user == null)
+                throw new Exception("Username not found");
 
             if (!VerifyPasswordHash(loginDto.Password, user.PasswordHash))
-                return null;
+                throw new Exception("Invalid password");
 
             return new UserDTO
             {
@@ -73,24 +73,9 @@ namespace backendcafe.Services
             return await _context.Users.AnyAsync(x => x.Username == username.ToLower());
         }
 
-        private string ComputeHash(string password)
-        {
-            using (SHA256 sha256Hash = SHA256.Create())
-            {
-                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
-                
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
-            }
-        }
-
         private bool VerifyPasswordHash(string password, string storedHash)
         {
-            string computedHash = ComputeHash(password);
+            string computedHash = HashUtility.ComputeHash(password);
             return computedHash == storedHash;
         }
     }

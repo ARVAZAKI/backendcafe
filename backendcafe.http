@@ -1,4 +1,4 @@
-@backendcafe_HostAddress = http://localhost:5100
+@backendcafe_HostAddress = http://localhost:7001
 
 GET {{backendcafe_HostAddress}}/weatherforecast/
 Accept: application/json

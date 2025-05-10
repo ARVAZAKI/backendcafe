@@ -11,19 +11,111 @@ namespace backendcafe.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Branch> Branches { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
-            // Konfigurasi tambahan jika diperlukan
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.Username)
-                .IsUnique();
-                
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.Id);
+                entity.Property(u => u.Id)
+                      .ValueGeneratedOnAdd()
+                      .HasColumnType("integer");
+                entity.Property(u => u.Username)
+                      .IsRequired()
+                      .HasMaxLength(50);
+                entity.Property(u => u.Email)
+                      .IsRequired()
+                      .HasMaxLength(100);
+                entity.Property(u => u.PasswordHash)
+                      .IsRequired()
+                      .HasMaxLength(256);
+                entity.Property(u => u.Role)
+                      .IsRequired()
+                      .HasConversion<string>();
+                entity.HasIndex(u => u.Username)
+                      .IsUnique();
+                entity.HasIndex(u => u.Email)
+                      .IsUnique();
+            });
+
+            modelBuilder.Entity<Branch>(entity =>
+            {
+                entity.HasKey(b => b.Id);
+                entity.Property(b => b.Id)
+                      .ValueGeneratedOnAdd()
+                      .HasColumnType("integer");
+                entity.Property(b => b.BranchName)
+                      .IsRequired()
+                      .HasMaxLength(100);
+                entity.Property(b => b.Address)
+                      .IsRequired()
+                      .HasMaxLength(200);
+                entity.Property(b => b.LogoUrl)
+                      .IsRequired()
+                      .HasMaxLength(500);
+                entity.Property(b => b.BannerUrl)
+                      .IsRequired(false)
+                      .HasMaxLength(500);
+                entity.HasIndex(b => b.BranchName)
+                      .IsUnique();
+            });
+
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.HasKey(c => c.Id);
+                entity.Property(c => c.Id)
+                      .ValueGeneratedOnAdd()
+                      .HasColumnType("integer");
+                entity.Property(c => c.CategoryName)
+                      .IsRequired()
+                      .HasMaxLength(50);
+                entity.Property(c => c.BranchId)
+                      .IsRequired();
+                entity.HasIndex(c => new { c.CategoryName, c.BranchId })
+                      .IsUnique();
+                entity.HasOne(c => c.Branch)
+                      .WithMany()
+                      .HasForeignKey(c => c.BranchId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+                entity.Property(p => p.Id)
+                      .ValueGeneratedOnAdd()
+                      .HasColumnType("integer");
+                entity.Property(p => p.Name)
+                      .IsRequired()
+                      .HasMaxLength(100);
+                entity.Property(p => p.Stock)
+                      .IsRequired();
+                entity.Property(p => p.Price)
+                      .IsRequired();
+                entity.Property(p => p.Description)
+                      .HasMaxLength(500);
+                entity.Property(p => p.IsActive)
+                      .IsRequired();
+                entity.Property(p => p.CategoryId)
+                      .IsRequired();
+                entity.Property(p => p.BranchId)
+                      .IsRequired();
+                entity.HasIndex(p => new { p.Name, p.BranchId })
+                      .IsUnique();
+                entity.HasOne(p => p.Category)
+                      .WithMany()
+                      .HasForeignKey(p => p.CategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(p => p.Branch)
+                      .WithMany()
+                      .HasForeignKey(p => p.BranchId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

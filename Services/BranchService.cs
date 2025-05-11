@@ -26,8 +26,6 @@ namespace backendcafe.Services
                     Id = b.Id,
                     BranchName = b.BranchName,
                     Address = b.Address,
-                    LogoUrl = b.LogoUrl,
-                    BannerUrl = b.BannerUrl
                 })
                 .ToListAsync();
         }
@@ -41,8 +39,6 @@ namespace backendcafe.Services
                     Id = b.Id,
                     BranchName = b.BranchName,
                     Address = b.Address,
-                    LogoUrl = b.LogoUrl,
-                    BannerUrl = b.BannerUrl
                 })
                 .FirstOrDefaultAsync();
 
@@ -54,17 +50,11 @@ namespace backendcafe.Services
 
         public async Task<BranchReadDTO> CreateBranchAsync(BranchCreateDTO branchDto)
         {
-            if (!Uri.TryCreate(branchDto.LogoUrl, UriKind.Absolute, out _))
-                throw new ArgumentException("Logo URL must be a valid URL");
-            if (branchDto.BannerUrl != null && !Uri.TryCreate(branchDto.BannerUrl, UriKind.Absolute, out _))
-                throw new ArgumentException("Banner URL must be a valid URL if provided");
-
+           
             var branch = new Branch
             {
                 BranchName = branchDto.BranchName,
                 Address = branchDto.Address,
-                LogoUrl = branchDto.LogoUrl,
-                BannerUrl = branchDto.BannerUrl
             };
 
             _context.Branches.Add(branch);
@@ -75,35 +65,25 @@ namespace backendcafe.Services
                 Id = branch.Id,
                 BranchName = branch.BranchName,
                 Address = branch.Address,
-                LogoUrl = branch.LogoUrl,
-                BannerUrl = branch.BannerUrl
             };
         }
 
         public async Task<BranchReadDTO> UpdateBranchAsync(int id, BranchUpdateDTO branchDto)
         {
-            if (!Uri.TryCreate(branchDto.LogoUrl, UriKind.Absolute, out _))
-                throw new ArgumentException("Logo URL must be a valid URL");
-            if (branchDto.BannerUrl != null && !Uri.TryCreate(branchDto.BannerUrl, UriKind.Absolute, out _))
-                throw new ArgumentException("Banner URL must be a valid URL if provided");
-
             var branch = await _context.Branches.FindAsync(id);
             if (branch == null)
                 throw new Exception("Branch not found");
 
             branch.BranchName = branchDto.BranchName;
             branch.Address = branchDto.Address;
-            branch.LogoUrl = branchDto.LogoUrl;
-            branch.BannerUrl = branchDto.BannerUrl;
-
+           
             await _context.SaveChangesAsync();
             return new BranchReadDTO
             {
                 Id = branch.Id,
                 BranchName = branch.BranchName,
                 Address = branch.Address,
-                LogoUrl = branch.LogoUrl,
-                BannerUrl = branch.BannerUrl
+                
             };
         }
 

@@ -11,13 +11,6 @@ namespace backendcafe.DTO
         [Required(ErrorMessage = "Address is required")]
         [StringLength(200, ErrorMessage = "Address cannot exceed 200 characters")]
         public string Address { get; set; }
-
-        [Required(ErrorMessage = "Logo URL is required")]
-        [StringLength(500, ErrorMessage = "Logo URL cannot exceed 500 characters")]
-        public string LogoUrl { get; set; }
-
-        [StringLength(500, ErrorMessage = "Banner URL cannot exceed 500 characters")]
-        public string? BannerUrl { get; set; }
     }
 
     public class BranchUpdateDTO
@@ -30,13 +23,6 @@ namespace backendcafe.DTO
         [Required(ErrorMessage = "Address is required")]
         [StringLength(200, ErrorMessage = "Address cannot exceed 200 characters")]
         public string Address { get; set; }
-
-        [Required(ErrorMessage = "Logo URL is required")]
-        [StringLength(500, ErrorMessage = "Logo URL cannot exceed 500 characters")]
-        public string LogoUrl { get; set; }
-
-        [StringLength(500, ErrorMessage = "Banner URL cannot exceed 500 characters")]
-        public string? BannerUrl { get; set; }
     }
 
     public class BranchReadDTO
@@ -44,8 +30,6 @@ namespace backendcafe.DTO
         public int Id { get; set; }
         public string BranchName { get; set; }
         public string Address { get; set; }
-        public string LogoUrl { get; set; }
-        public string? BannerUrl { get; set; }
     }
 
     public class BranchDeleteDTO

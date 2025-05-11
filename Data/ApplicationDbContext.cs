@@ -14,6 +14,7 @@ namespace backendcafe.Data
         public DbSet<Branch> Branches { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Setting> Settings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,12 +56,6 @@ namespace backendcafe.Data
                 entity.Property(b => b.Address)
                       .IsRequired()
                       .HasMaxLength(200);
-                entity.Property(b => b.LogoUrl)
-                      .IsRequired()
-                      .HasMaxLength(500);
-                entity.Property(b => b.BannerUrl)
-                      .IsRequired(false)
-                      .HasMaxLength(500);
                 entity.HasIndex(b => b.BranchName)
                       .IsUnique();
             });
@@ -116,6 +111,27 @@ namespace backendcafe.Data
                       .HasForeignKey(p => p.BranchId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+
+            modelBuilder.Entity<Setting>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+                entity.Property(s => s.OpeningTime)
+                      .HasConversion(
+                          timeOnly => timeOnly.ToTimeSpan(),
+                          timeSpan => TimeOnly.FromTimeSpan(timeSpan));
+                
+                entity.Property(s => s.ClosingTime)
+                      .HasConversion(
+                          timeOnly => timeOnly.ToTimeSpan(),
+                          timeSpan => TimeOnly.FromTimeSpan(timeSpan));
+                entity.Property(s => s.WifiPassword).HasMaxLength(20);  
+                entity.HasOne(s => s.Branch)
+                      .WithOne()
+                      .HasForeignKey<Setting>(s => s.BranchId)
+                      .OnDelete(DeleteBehavior.Cascade);
+               
+            });
+        
         }
     }
 }

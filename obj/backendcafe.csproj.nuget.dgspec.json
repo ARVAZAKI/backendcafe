@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "/Users/ghalyabr/Documents/Projek/backendcafe/backendcafe.csproj": {}
+    "D:\\coding\\backendcafe\\backendcafe.csproj": {}
   },
   "projects": {
-    "/Users/ghalyabr/Documents/Projek/backendcafe/backendcafe.csproj": {
+    "D:\\coding\\backendcafe\\backendcafe.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/ghalyabr/Documents/Projek/backendcafe/backendcafe.csproj",
+        "projectUniqueName": "D:\\coding\\backendcafe\\backendcafe.csproj",
         "projectName": "backendcafe",
-        "projectPath": "/Users/ghalyabr/Documents/Projek/backendcafe/backendcafe.csproj",
-        "packagesPath": "/Users/ghalyabr/.nuget/packages/",
-        "outputPath": "/Users/ghalyabr/Documents/Projek/backendcafe/obj/",
+        "projectPath": "D:\\coding\\backendcafe\\backendcafe.csproj",
+        "packagesPath": "C:\\Users\\arvazaki\\.nuget\\packages\\",
+        "outputPath": "D:\\coding\\backendcafe\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/Users/ghalyabr/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\arvazaki\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -97,7 +101,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.408/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.408/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

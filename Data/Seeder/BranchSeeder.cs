@@ -16,15 +16,11 @@ namespace backendcafe.Data.Seeders
                     {
                         BranchName = "Jakarta Branch",
                         Address = "123 Sudirman St",
-                        LogoUrl = "https://example.com/logos/jakarta.png",
-                        BannerUrl = "https://example.com/banners/jakarta.png"
                     },
                     new Branch
                     {
                         BranchName = "Bandung Branch",
                         Address = "456 Dago St",
-                        LogoUrl = "https://example.com/logos/bandung.png",
-                        BannerUrl = null
                     }
                 );
                 await context.SaveChangesAsync();

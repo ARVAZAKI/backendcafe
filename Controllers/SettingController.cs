@@ -43,20 +43,6 @@ namespace backendcafe.Controllers{
             return await _settingService.UpdateSetting(settingId, updateSettingDTO);
         }
 
-        // ATAU Solusi 2: Membuat action baru dengan parameter branch ID
-        [HttpPut("branch/{branchId}")]
-        public async Task<ActionResult<SettingReadDTO>> UpdateSettingByBranch(
-            [FromRoute] int branchId,
-            [FromBody] SettingUpdateDTO updateSettingDTO)
-        {
-            // Cari setting ID berdasarkan branch ID
-            var settings = await _settingService.GetSettingsByBranch(branchId);
-            if (settings.Count == 0)
-                return NotFound($"No setting found for branch with ID {branchId}");
-            
-            var settingId = settings[0].Id;
-            return await _settingService.UpdateSetting(settingId, updateSettingDTO);
-        }
     }
 
     }

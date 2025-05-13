@@ -23,13 +23,12 @@ namespace backendcafe.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Create transaction first with initial data
                 var transactionCode = GenerateTransactionCode();
                 var newTransaction = new Transaction
                 {
                     Name = transactionDto.Name,
                     TransactionCode = transactionCode,
-                    Total = 0, // Will be updated after cart items are processed
+                    Total = 0, 
                     BranchId = transactionDto.BranchId,
                     Status = "Pending",
                     CreatedAt = DateTime.Now,
@@ -39,11 +38,9 @@ namespace backendcafe.Services
                 _context.Transactions.Add(newTransaction);
                 await _context.SaveChangesAsync();
 
-                // 2. Process cart items
                 int totalAmount = 0;
                 foreach (var cartItem in transactionDto.CartItems)
                 {
-                    // Get product to validate and calculate price
                     var product = await _context.Products
                         .Where(p => p.Id == cartItem.ProductId && p.BranchId == transactionDto.BranchId)
                         .FirstOrDefaultAsync();
@@ -57,7 +54,6 @@ namespace backendcafe.Services
                     if (product.Stock < cartItem.Quantity)
                         throw new Exception($"Insufficient stock for product {product.Name}. Available: {product.Stock}, Requested: {cartItem.Quantity}");
 
-                    // Create cart item
                     var newCartItem = new Cart
                     {
                         BranchId = transactionDto.BranchId,
@@ -68,21 +64,16 @@ namespace backendcafe.Services
 
                     _context.Carts.Add(newCartItem);
 
-                    // Update product stock
                     product.Stock -= cartItem.Quantity;
 
-                    // Calculate total amount
                     totalAmount += product.Price * cartItem.Quantity;
                 }
 
-                // 3. Update transaction with total amount
                 newTransaction.Total = totalAmount;
                 await _context.SaveChangesAsync();
 
-                // 4. Commit transaction
                 await transaction.CommitAsync();
 
-                // 5. Return response
                 return new TransactionResponseDTO
                 {
                     Id = newTransaction.Id,
@@ -195,7 +186,6 @@ namespace backendcafe.Services
 
         private string GenerateTransactionCode()
         {
-            // Generate a unique transaction code, you can customize this as needed
             return $"TRX-{DateTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
         }
     }

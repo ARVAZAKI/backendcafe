@@ -24,6 +24,7 @@ builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISettingService, SettingService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 // Konfigurasi JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

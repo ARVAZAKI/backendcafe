@@ -15,6 +15,8 @@ namespace backendcafe.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Setting> Settings { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -129,9 +131,55 @@ namespace backendcafe.Data
                       .WithOne()
                       .HasForeignKey<Setting>(s => s.BranchId)
                       .OnDelete(DeleteBehavior.Cascade);
-               
             });
-        
+
+            modelBuilder.Entity<Cart>(entity => {
+                entity.HasKey(c => c.Id);
+                entity.Property(c => c.Id)
+                      .ValueGeneratedOnAdd()
+                      .HasColumnType("integer");
+                entity.Property(c => c.Quantity)
+                      .IsRequired();
+                entity.HasOne(c => c.Branch)
+                      .WithMany()
+                      .HasForeignKey(c => c.BranchId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(c => c.Product)
+                      .WithMany()
+                      .HasForeignKey(c => c.ProductId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(c => new { c.ProductId, c.TransactionId })
+                      .IsUnique();
+            });
+
+            modelBuilder.Entity<Transaction>(entity => {
+                entity.HasKey(t => t.Id);
+                entity.Property(t => t.Id)
+                      .ValueGeneratedOnAdd()
+                      .HasColumnType("integer");
+                entity.Property(t => t.Name)
+                      .IsRequired()
+                      .HasMaxLength(100);
+                entity.Property(t => t.TransactionCode)
+                      .IsRequired()
+                      .HasMaxLength(50);
+                entity.Property(t => t.Total)
+                      .IsRequired();
+                entity.Property(t => t.Status)
+                      .IsRequired()
+                      .HasMaxLength(20);
+                   entity.Property(c => c.CreatedBy)
+                      .IsRequired()
+                      .HasMaxLength(100);
+                entity.Property(t => t.CreatedAt)
+                      .IsRequired();
+                entity.HasOne(t => t.Branch)
+                      .WithMany()
+                      .HasForeignKey(t => t.BranchId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(t => t.TransactionCode)
+                      .IsUnique();
+            });
         }
     }
 }

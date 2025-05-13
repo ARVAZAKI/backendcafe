@@ -12,8 +12,8 @@ using backendcafe.Data;
 namespace backendcafe.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250511072711_migrationversion1")]
-    partial class migrationversion1
+    [Migration("20250513095918_migrationv1")]
+    partial class migrationv1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,6 +49,36 @@ namespace backendcafe.Migrations
                         .IsUnique();
 
                     b.ToTable("Branches");
+                });
+
+            modelBuilder.Entity("backendcafe.Models.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TransactionId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("ProductId", "TransactionId")
+                        .IsUnique();
+
+                    b.ToTable("Carts");
                 });
 
             modelBuilder.Entity("backendcafe.Models.Category", b =>
@@ -152,6 +182,53 @@ namespace backendcafe.Migrations
                     b.ToTable("Settings");
                 });
 
+            modelBuilder.Entity("backendcafe.Models.Transaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("Total")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TransactionCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("TransactionCode")
+                        .IsUnique();
+
+                    b.ToTable("Transactions");
+                });
+
             modelBuilder.Entity("backendcafe.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -190,6 +267,25 @@ namespace backendcafe.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("backendcafe.Models.Cart", b =>
+                {
+                    b.HasOne("backendcafe.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backendcafe.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("backendcafe.Models.Category", b =>
                 {
                     b.HasOne("backendcafe.Models.Branch", "Branch")
@@ -226,6 +322,17 @@ namespace backendcafe.Migrations
                         .WithOne()
                         .HasForeignKey("backendcafe.Models.Setting", "BranchId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("backendcafe.Models.Transaction", b =>
+                {
+                    b.HasOne("backendcafe.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Branch");

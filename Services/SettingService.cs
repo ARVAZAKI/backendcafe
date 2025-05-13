@@ -58,8 +58,9 @@ namespace backendcafe.Services{
             };
         }
 
-        public async Task<SettingReadDTO> UpdateSetting(int SettingId, SettingUpdateDTO updateSettingDto) {
-            var setting = await _context.Settings.FindAsync(SettingId);
+        public async Task<SettingReadDTO> UpdateSetting(int branchId, SettingUpdateDTO updateSettingDto) {
+            var setting = await _context.Settings.FirstOrDefaultAsync(p => p.BranchId == branchId);
+            
             if (setting == null)
                 throw new Exception("Setting not found");
             
@@ -70,10 +71,11 @@ namespace backendcafe.Services{
             await _context.SaveChangesAsync();
 
             return new SettingReadDTO{
-                  Id = setting.Id,
-                  ClosingTime = updateSettingDto.ClosingTime,
-                  OpeningTime = updateSettingDto.OpeningTime,
-                  WifiPassword = updateSettingDto.WifiPassword
+                Id = setting.Id,
+                BranchId = branchId,
+                ClosingTime = setting.ClosingTime,
+                OpeningTime = setting.OpeningTime,
+                WifiPassword = setting.WifiPassword
             };
         }
 

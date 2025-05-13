@@ -35,12 +35,12 @@ namespace backendcafe.Controllers{
           }
         }
 
-        [HttpPut("{settingId}")]
+        [HttpPut("{branchId}")]
         public async Task<ActionResult<SettingReadDTO>> UpdateSetting(
-            [FromRoute] int settingId, 
+            [FromRoute] int branchId, 
             [FromBody] SettingUpdateDTO updateSettingDTO)
         {
-            return await _settingService.UpdateSetting(settingId, updateSettingDTO);
+            return await _settingService.UpdateSetting(branchId, updateSettingDTO);
         }
 
     }

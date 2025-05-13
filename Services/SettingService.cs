@@ -23,6 +23,8 @@ namespace backendcafe.Services{
                 
             return await query.Select(p => new SettingReadDTO
             {
+                BranchId = p.BranchId,
+                Id = p.Id,
                 OpeningTime = p.OpeningTime,
                 ClosingTime = p.ClosingTime,
                 WifiPassword = p.WifiPassword

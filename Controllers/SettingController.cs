@@ -14,7 +14,7 @@ namespace backendcafe.Controllers{
             _settingService = settingService;
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{branchId}")]
         public async Task<IActionResult> GetSetting(int branchId){
          try{
            var setting = await _settingService.GetSettingsByBranch(branchId);

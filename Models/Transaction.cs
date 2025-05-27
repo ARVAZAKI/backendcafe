@@ -12,5 +12,8 @@ namespace backendcafe.Models{
             public Branch Branch { get; set; }
             public string CreatedBy { get; set; }
             public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+            public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+
       }
 }

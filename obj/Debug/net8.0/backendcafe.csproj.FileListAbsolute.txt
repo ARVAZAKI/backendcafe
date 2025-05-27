@@ -143,3 +143,4 @@ D:\coding\backendcafe\obj\Debug\net8.0\refint\backendcafe.dll
 D:\coding\backendcafe\obj\Debug\net8.0\backendcafe.pdb
 D:\coding\backendcafe\obj\Debug\net8.0\backendcafe.genruntimeconfig.cache
 D:\coding\backendcafe\obj\Debug\net8.0\ref\backendcafe.dll
+D:\coding\backendcafe\bin\Debug\net8.0\Newtonsoft.Json.dll

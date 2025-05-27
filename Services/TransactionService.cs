@@ -9,13 +9,17 @@ using System.Threading.Tasks;
 
 namespace backendcafe.Services
 {
+   
+
     public class TransactionService : ITransactionService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMidtransService _midtransService;
 
-        public TransactionService(ApplicationDbContext context)
+        public TransactionService(ApplicationDbContext context, IMidtransService midtransService)
         {
             _context = context;
+            _midtransService = midtransService;
         }
 
         public async Task<TransactionResponseDTO> CreateTransactionWithCartItemsAsync(TransactionCreateDTO transactionDto)
@@ -31,7 +35,7 @@ namespace backendcafe.Services
                     Total = 0, 
                     BranchId = transactionDto.BranchId,
                     Status = "Pending",
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     CreatedBy = transactionDto.CreatedBy
                 };
 
@@ -92,6 +96,152 @@ namespace backendcafe.Services
                 await transaction.RollbackAsync();
                 throw new Exception($"Failed to create transaction: {ex.Message}");
             }
+        }
+
+        public async Task<PaymentResponseDTO> CreatePaymentAsync(CreatePaymentRequestDTO paymentRequest)
+        {
+            try
+            {
+                var transaction = await _context.Transactions
+                    .Include(t => t.Carts)
+                    .ThenInclude(c => c.Product)
+                    .FirstOrDefaultAsync(t => t.Id == paymentRequest.TransactionId);
+
+                if (transaction == null)
+                    throw new Exception("Transaction not found");
+
+                if (transaction.Status != "Pending")
+                    throw new Exception("Transaction is not in pending status");
+
+                // Prepare item details for Midtrans
+                var itemDetails = new List<MidtransItemDetailsDTO>();
+                foreach (var cartItem in transaction.Carts)
+                {
+                    itemDetails.Add(new MidtransItemDetailsDTO
+                    {
+                        Id = cartItem.ProductId.ToString(),
+                        Name = cartItem.Product.Name,
+                        Price = cartItem.Product.Price,
+                        Quantity = cartItem.Quantity
+                    });
+                }
+
+                // Create Midtrans transaction request
+                var midtransRequest = new MidtransCreateTransactionDTO
+                {
+                    TransactionDetails = new MidtransTransactionDetailsDTO
+                    {
+                        OrderId = transaction.TransactionCode,
+                        GrossAmount = transaction.Total
+                    },
+                    CustomerDetails = new MidtransCustomerDetailsDTO
+                    {
+                        FirstName = paymentRequest.CustomerName,
+                        Email = paymentRequest.CustomerEmail,
+                        Phone = paymentRequest.CustomerPhone
+                    },
+                    ItemDetails = itemDetails,
+                    EnabledPayments = paymentRequest.EnabledPayments?.Count > 0 
+                        ? paymentRequest.EnabledPayments 
+                        : new List<string> { "credit_card", "bni_va", "bca_va", "bri_va", "echannel", "permata_va", "other_va", "gopay", "shopeepay" },
+                    Callbacks = new MidtransCallbacksDTO
+                    {
+                        Finish = paymentRequest.FinishUrl,
+                        Error = paymentRequest.ErrorUrl,
+                        Pending = paymentRequest.PendingUrl
+                    }
+                };
+
+                // Get Snap token from Midtrans
+                var snapResponse = await _midtransService.CreateSnapTokenAsync(midtransRequest);
+
+                // Update transaction status to "Waiting Payment"
+                transaction.Status = "Waiting Payment";
+                await _context.SaveChangesAsync();
+
+                return new PaymentResponseDTO
+                {
+                    SnapToken = snapResponse.Token,
+                    RedirectUrl = snapResponse.RedirectUrl,
+                    OrderId = transaction.TransactionCode,
+                    TransactionId = transaction.Id
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to create payment: {ex.Message}");
+            }
+        }
+
+        public async Task<TransactionResponseDTO> HandlePaymentNotificationAsync(MidtransNotificationDTO notification)
+        {
+            try
+            {
+                // Verify notification signature
+                var isValid = await _midtransService.VerifyNotificationAsync(notification);
+                if (!isValid)
+                    throw new Exception("Invalid notification signature");
+
+                // Find transaction by order ID (transaction code)
+                var transaction = await _context.Transactions
+                    .FirstOrDefaultAsync(t => t.TransactionCode == notification.OrderId);
+
+                if (transaction == null)
+                    throw new Exception("Transaction not found");
+
+                // Update transaction status based on Midtrans status
+                var newStatus = MapMidtransStatusToTransactionStatus(notification.TransactionStatus, notification.FraudStatus);
+                
+                if (transaction.Status != newStatus)
+                {
+                    transaction.Status = newStatus;
+                    
+                    // If payment is successful, you might want to do additional processing
+                    if (newStatus == "Paid")
+                    {
+                        // Add any additional logic for successful payment
+                        // e.g., send email confirmation, update inventory, etc.
+                    }
+                    else if (newStatus == "Failed" || newStatus == "Cancelled")
+                    {
+                        // Restore product stock if payment failed
+                        await RestoreProductStockAsync(transaction.Id);
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+
+                return await GetTransactionByIdAsync(transaction.Id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to handle payment notification: {ex.Message}");
+            }
+        }
+
+        public async Task<TransactionResponseDTO> GetTransactionByOrderIdAsync(string orderId)
+        {
+            var transaction = await _context.Transactions
+                .Where(t => t.TransactionCode == orderId)
+                .Select(t => new TransactionResponseDTO
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    TransactionCode = t.TransactionCode,
+                    Total = t.Total,
+                    Status = t.Status,
+                    BranchId = t.BranchId,
+                    CreatedAt = t.CreatedAt,
+                    CreatedBy = t.CreatedBy
+                })
+                .FirstOrDefaultAsync();
+
+            if (transaction == null)
+                throw new Exception("Transaction not found");
+
+            transaction.CartItems = await GetCartItemsByTransactionId(transaction.Id);
+
+            return transaction;
         }
 
         public async Task<List<TransactionResponseDTO>> GetAllTransactionsAsync()
@@ -182,6 +332,36 @@ namespace backendcafe.Services
                     Subtotal = c.Product.Price * c.Quantity
                 })
                 .ToListAsync();
+        }
+
+        private async Task RestoreProductStockAsync(int transactionId)
+        {
+            var cartItems = await _context.Carts
+                .Include(c => c.Product)
+                .Where(c => c.TransactionId == transactionId)
+                .ToListAsync();
+
+            foreach (var cartItem in cartItems)
+            {
+                cartItem.Product.Stock += cartItem.Quantity;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private string MapMidtransStatusToTransactionStatus(string transactionStatus, string fraudStatus)
+        {
+            return transactionStatus?.ToLower() switch
+            {
+                "capture" => fraudStatus == "challenge" ? "Challenge" : "Paid",
+                "settlement" => "Paid",
+                "pending" => "Waiting Payment",
+                "deny" => "Failed",
+                "cancel" => "Cancelled",
+                "expire" => "Expired",
+                "failure" => "Failed",
+                _ => "Unknown"
+            };
         }
 
         private string GenerateTransactionCode()

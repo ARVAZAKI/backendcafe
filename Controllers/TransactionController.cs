@@ -46,6 +46,20 @@ namespace backendcafe.Controllers
             }
         }
 
+        [HttpGet("order/{orderId}")]
+        public async Task<IActionResult> GetTransactionByOrderId(string orderId)
+        {
+            try
+            {
+                var transaction = await _transactionService.GetTransactionByOrderIdAsync(orderId);
+                return Ok(transaction);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateTransaction([FromBody] TransactionCreateDTO transactionDto)
         {
@@ -57,6 +71,37 @@ namespace backendcafe.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("payment")]
+        public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequestDTO paymentRequest)
+        {
+            try
+            {
+                var result = await _transactionService.CreatePaymentAsync(paymentRequest);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("notification")]
+        public async Task<IActionResult> HandlePaymentNotification([FromBody] MidtransNotificationDTO notification)
+        {
+            try
+            {
+                var result = await _transactionService.HandlePaymentNotificationAsync(notification);
+                return Ok(new { message = "Notification processed successfully", transaction = result });
+            }
+            catch (Exception ex)
+            {
+                // Log the error but return OK to Midtrans to prevent retry
+                // You should implement proper logging here
+                Console.WriteLine($"Notification processing error: {ex.Message}");
+                return Ok(new { message = "Notification received but processing failed" });
             }
         }
 

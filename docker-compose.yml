@@ -47,7 +47,6 @@ services:
       - Midtrans__ClientKey=${MIDTRANS_CLIENT_KEY}
       - Midtrans__IsProduction=${MIDTRANS_IS_PRODUCTION:-false}
       - Midtrans__MerchantId=${MIDTRANS_MERCHANT_ID}
-      # Add data protection key storage
       - DataProtection__Keys=/app/keys
     ports:
       - '${API_PORT:-8080}:8080'
@@ -71,31 +70,7 @@ services:
           memory: 512M
     volumes:
       - ./logs:/app/logs
-      - api_keys:/app/keys # For data protection keys persistence
-
-  # Nginx Reverse Proxy
-  nginx:
-    image: nginx:alpine
-    container_name: cafemobile_nginx
-    ports:
-      - '${NGINX_HTTP_PORT:-80}:80'
-      - '${NGINX_HTTPS_PORT:-443}:443'
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./logs/nginx:/var/log/nginx
-    depends_on:
-      api:
-        condition: service_healthy
-    networks:
-      - app-network
-    restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost/health']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      - api_keys:/app/keys
 
 volumes:
   postgres_data:

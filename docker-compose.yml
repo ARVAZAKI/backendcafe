@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Database PostgreSQL
   db:
     image: postgres:17-alpine
     container_name: cafemobile_db
@@ -23,6 +22,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:
@@ -30,7 +30,6 @@ services:
         reservations:
           memory: 256M
 
-  # .NET API Application
   api:
     build:
       context: .

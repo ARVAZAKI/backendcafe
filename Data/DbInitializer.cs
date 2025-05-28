@@ -1,5 +1,8 @@
-using backendcafe.Data.Seeders;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using backendcafe.Data.Seeders;
 
 namespace backendcafe.Data
 {
@@ -9,58 +12,69 @@ namespace backendcafe.Data
         {
             try
             {
-                // Check if database exists and can be connected to
-                var canConnect = await context.Database.CanConnectAsync();
-                
+                // Retry logic untuk memastikan database siap
+                int retries = 5;
+                int delayMs = 5000; // 5 detik
+                bool canConnect = false;
+
+                for (int i = 0; i < retries; i++)
+                {
+                    Console.WriteLine($"Mencoba koneksi ke database (percobaan {i + 1}/{retries})...");
+                    canConnect = await context.Database.CanConnectAsync();
+                    if (canConnect)
+                        break;
+                    
+                    Console.WriteLine("Database belum siap, menunggu...");
+                    await Task.Delay(delayMs);
+                }
+
                 if (!canConnect)
                 {
-                    Console.WriteLine("Database not accessible, creating...");
+                    Console.WriteLine("Database tidak dapat diakses, mencoba membuat...");
                     await context.Database.EnsureCreatedAsync();
                 }
                 else
                 {
-                    // Database exists, check for pending migrations
+                    // Database ada, cek migrasi tertunda
                     var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
                     if (pendingMigrations.Any())
                     {
-                        Console.WriteLine($"Applying {pendingMigrations.Count()} pending migrations...");
+                        Console.WriteLine($"Menerapkan {pendingMigrations.Count()} migrasi tertunda...");
                         await context.Database.MigrateAsync();
                     }
                     else
                     {
-                        Console.WriteLine("Database is up to date.");
+                        Console.WriteLine("Database sudah up-to-date.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Database initialization error: {ex.Message}");
-                
-                // Try to handle common scenarios
+                Console.WriteLine($"Error inisialisasi database: {ex.Message}");
                 if (ex.Message.Contains("already exists"))
                 {
-                    Console.WriteLine("Database/tables already exist, continuing with seeding...");
+                    Console.WriteLine("Database/tabel sudah ada, lanjutkan ke seeding...");
                 }
                 else
                 {
-                    throw; // Re-throw if it's not a "already exists" error
+                    throw;
                 }
             }
 
-            // Run seeders
+            // Jalankan seeding
             try
             {
-                Console.WriteLine("Starting data seeding...");
+                Console.WriteLine("Memulai seeding data...");
                 await BranchSeeder.SeedAsync(context);
                 await UserSeeder.SeedAsync(context);
                 await CategorySeeder.SeedAsync(context);
                 await ProductSeeder.SeedAsync(context);
-                Console.WriteLine("Data seeding completed successfully.");
+                Console.WriteLine("Seeding data selesai.");
             }
             catch (Exception seedEx)
             {
-                Console.WriteLine($"Seeding error: {seedEx.Message}");
-                throw; // Re-throw seeding errors
+                Console.WriteLine($"Error seeding: {seedEx.Message}");
+                throw;
             }
         }
     }

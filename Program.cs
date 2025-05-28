@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using backendcafe.Data;
 using backendcafe.Services;
 using backendcafe.Models;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Konfigurasi Data Protection
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"));
 
 // Konfigurasi Database PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -26,7 +31,6 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ISettingService, SettingService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddHttpClient<IMidtransService, MidtransService>();
-builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IMidtransService, MidtransService>();
 
 // Konfigurasi JWT Authentication
@@ -63,36 +67,35 @@ try
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await DbInitializer.InitializeAsync(dbContext);
     }
-    Console.WriteLine("Database initialization completed successfully.");
+    Console.WriteLine("Inisialisasi database selesai.");
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"Database initialization failed: {ex.Message}");
-    // Decide whether to continue or exit based on the error
+    Console.WriteLine($"Inisialisasi database gagal: {ex.Message}");
     if (ex.Message.Contains("already exists"))
     {
-        Console.WriteLine("Continuing application startup...");
+        Console.WriteLine("Melanjutkan startup aplikasi...");
     }
     else
     {
-        Console.WriteLine("Critical database error, exiting...");
+        Console.WriteLine("Error kritis pada database, keluar...");
         throw;
     }
 }
 
-// Configure the HTTP request pipeline
+// Konfigurasi pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Add health check endpoint
+// Tambahkan endpoint health check
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
-app.UseHttpsRedirection();
+// Nonaktifkan HTTPS redirection karena hanya menggunakan HTTP
+// app.UseHttpsRedirection();
 
-// Tambahkan middleware Authentication dan Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 

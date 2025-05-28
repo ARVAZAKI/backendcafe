@@ -47,6 +47,8 @@ services:
       - Midtrans__ClientKey=${MIDTRANS_CLIENT_KEY}
       - Midtrans__IsProduction=${MIDTRANS_IS_PRODUCTION:-false}
       - Midtrans__MerchantId=${MIDTRANS_MERCHANT_ID}
+      # Add data protection key storage
+      - DataProtection__Keys=/app/keys
     ports:
       - '${API_PORT:-8080}:8080'
     depends_on:
@@ -69,8 +71,9 @@ services:
           memory: 512M
     volumes:
       - ./logs:/app/logs
+      - api_keys:/app/keys # For data protection keys persistence
 
-  # Nginx Reverse Proxy (Optional tapi recommended untuk production)
+  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
     container_name: cafemobile_nginx
@@ -82,7 +85,8 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./logs/nginx:/var/log/nginx
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
       - app-network
     restart: unless-stopped
@@ -91,9 +95,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
 
 volumes:
   postgres_data:
+    driver: local
+  api_keys:
     driver: local
 
 networks:

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/ghalyabr/Documents/Projek/backendcafe/backendcafe.csproj": {}
+    "/Users/ghalyabr/Documents/WKWKKW/backendcafe/backendcafe.csproj": {}
   },
   "projects": {
-    "/Users/ghalyabr/Documents/Projek/backendcafe/backendcafe.csproj": {
+    "/Users/ghalyabr/Documents/WKWKKW/backendcafe/backendcafe.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/ghalyabr/Documents/Projek/backendcafe/backendcafe.csproj",
+        "projectUniqueName": "/Users/ghalyabr/Documents/WKWKKW/backendcafe/backendcafe.csproj",
         "projectName": "backendcafe",
-        "projectPath": "/Users/ghalyabr/Documents/Projek/backendcafe/backendcafe.csproj",
+        "projectPath": "/Users/ghalyabr/Documents/WKWKKW/backendcafe/backendcafe.csproj",
         "packagesPath": "/Users/ghalyabr/.nuget/packages/",
-        "outputPath": "/Users/ghalyabr/Documents/Projek/backendcafe/obj/",
+        "outputPath": "/Users/ghalyabr/Documents/WKWKKW/backendcafe/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/ghalyabr/.nuget/NuGet/NuGet.Config"

@@ -28,6 +28,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddHttpClient<IMidtransService, MidtransService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IMidtransService, MidtransService>();
+
 // Konfigurasi JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -47,10 +48,28 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 var app = builder.Build();
 
 // Migrasi dan Seeding Otomatis menggunakan DbInitializer
-using (var scope = app.Services.CreateScope())
+try
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await DbInitializer.InitializeAsync(dbContext);
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await DbInitializer.InitializeAsync(dbContext);
+    }
+    Console.WriteLine("Database initialization completed successfully.");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Database initialization failed: {ex.Message}");
+    // Decide whether to continue or exit based on the error
+    if (ex.Message.Contains("already exists"))
+    {
+        Console.WriteLine("Continuing application startup...");
+    }
+    else
+    {
+        Console.WriteLine("Critical database error, exiting...");
+        throw;
+    }
 }
 
 // Configure the HTTP request pipeline
@@ -59,6 +78,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Add health check endpoint
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
 
 app.UseHttpsRedirection();
 

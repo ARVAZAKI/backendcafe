@@ -71,19 +71,19 @@ namespace backendcafe.Services
 
         public async Task<ProductResponseDTO> CreateProductAsync(ProductCreateDTO productDto)
         {
-            var branchExists = await _context.Branches.AnyAsync(b => b.Id == productDto.BranchId);
-            if (!branchExists)
+            
+            // Validasi foreign key existence
+            if (!await _context.Branches.AnyAsync(b => b.Id == productDto.BranchId))
                 throw new ArgumentException("Branch not found");
 
-            var categoryExists = await _context.Categories.AnyAsync(c => c.Id == productDto.CategoryId);
-            if (!categoryExists)
+            if (!await _context.Categories.AnyAsync(c => c.Id == productDto.CategoryId))
                 throw new ArgumentException("Category not found");
 
-            // Upload image to S3 if provided
-            string imageUrl = null;
+            // Handle image upload (opsional)
+            string? imageUrl = null;
             if (productDto.ImageFile != null)
             {
-                var fileName = $"products/{Guid.NewGuid()}_{productDto.ImageFile.FileName}";
+                var fileName = $"products/{Guid.NewGuid()}_{Path.GetFileName(productDto.ImageFile.FileName)}";
                 imageUrl = await _s3Service.UploadFileAsync(productDto.ImageFile, fileName);
             }
 
@@ -92,7 +92,7 @@ namespace backendcafe.Services
                 Name = productDto.Name,
                 Stock = productDto.Stock,
                 Price = productDto.Price,
-                Description = productDto.Description,
+                Description = productDto.Description ?? string.Empty,
                 IsActive = productDto.IsActive,
                 CategoryId = productDto.CategoryId,
                 BranchId = productDto.BranchId,
@@ -116,38 +116,38 @@ namespace backendcafe.Services
             };
         }
 
+
         public async Task<ProductResponseDTO> UpdateProductAsync(int id, ProductUpdateDTO productDto)
         {
-            var branchExists = await _context.Branches.AnyAsync(b => b.Id == productDto.BranchId);
-            if (!branchExists)
-                throw new ArgumentException("Branch not found");
-
-            var categoryExists = await _context.Categories.AnyAsync(c => c.Id == productDto.CategoryId);
-            if (!categoryExists)
-                throw new ArgumentException("Category not found");
-
             var product = await _context.Products.FindAsync(id);
             if (product == null)
-                throw new Exception("Product not found");
+                throw new ArgumentException("Product not found");
+
+            // Validasi foreign key existence
+            if (!await _context.Branches.AnyAsync(b => b.Id == productDto.BranchId))
+                throw new ArgumentException("Branch not found");
+
+            if (!await _context.Categories.AnyAsync(c => c.Id == productDto.CategoryId))
+                throw new ArgumentException("Category not found");
 
             // Handle image update
             if (productDto.ImageFile != null)
             {
-                // Delete old image if exists
+                // Hapus gambar lama dari S3 jika ada
                 if (!string.IsNullOrEmpty(product.ImageUrl))
                 {
                     await _s3Service.DeleteFileAsync(product.ImageUrl);
                 }
 
-                // Upload new image
-                var fileName = $"products/{Guid.NewGuid()}_{productDto.ImageFile.FileName}";
+                var fileName = $"products/{Guid.NewGuid()}_{Path.GetFileName(productDto.ImageFile.FileName)}";
                 product.ImageUrl = await _s3Service.UploadFileAsync(productDto.ImageFile, fileName);
             }
 
+            // Update properti produk
             product.Name = productDto.Name;
             product.Stock = productDto.Stock;
             product.Price = productDto.Price;
-            product.Description = productDto.Description;
+            product.Description = productDto.Description ?? string.Empty;
             product.IsActive = productDto.IsActive;
             product.CategoryId = productDto.CategoryId;
             product.BranchId = productDto.BranchId;
@@ -167,6 +167,7 @@ namespace backendcafe.Services
                 ImageUrl = product.ImageUrl
             };
         }
+
 
         public async Task<bool> DeleteProductAsync(int id)
         {

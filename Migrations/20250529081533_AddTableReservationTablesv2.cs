@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace backendcafe.Migrations
 {
     /// <inheritdoc />
-    public partial class migrationv1 : Migration
+    public partial class AddTableReservationTablesv2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -85,6 +85,31 @@ namespace backendcafe.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Tables",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    TableNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Capacity = table.Column<int>(type: "integer", nullable: false),
+                    IsAvailable = table.Column<bool>(type: "boolean", nullable: false),
+                    BranchId = table.Column<int>(type: "integer", nullable: false),
+                    Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tables", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tables_Branches_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Transactions",
                 columns: table => new
                 {
@@ -141,6 +166,44 @@ namespace backendcafe.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TableReservations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ReservationCode = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CustomerName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CustomerPhone = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: true),
+                    CustomerEmail = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    TableId = table.Column<int>(type: "integer", nullable: false),
+                    BranchId = table.Column<int>(type: "integer", nullable: false),
+                    ReservationDateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DurationHours = table.Column<int>(type: "integer", nullable: false),
+                    GuestCount = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CreatedBy = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TableReservations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TableReservations_Branches_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TableReservations_Tables_TableId",
+                        column: x => x.TableId,
+                        principalTable: "Tables",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Carts",
                 columns: table => new
                 {
@@ -166,6 +229,12 @@ namespace backendcafe.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Carts_Transactions_TransactionId",
+                        column: x => x.TransactionId,
+                        principalTable: "Transactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -184,6 +253,11 @@ namespace backendcafe.Migrations
                 table: "Carts",
                 columns: new[] { "ProductId", "TransactionId" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Carts_TransactionId",
+                table: "Carts",
+                column: "TransactionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Categories_BranchId",
@@ -216,6 +290,33 @@ namespace backendcafe.Migrations
                 name: "IX_Settings_BranchId",
                 table: "Settings",
                 column: "BranchId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TableReservations_BranchId",
+                table: "TableReservations",
+                column: "BranchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TableReservations_ReservationCode",
+                table: "TableReservations",
+                column: "ReservationCode",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TableReservations_TableId",
+                table: "TableReservations",
+                column: "TableId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tables_BranchId",
+                table: "Tables",
+                column: "BranchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tables_TableNumber_BranchId",
+                table: "Tables",
+                columns: new[] { "TableNumber", "BranchId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -252,13 +353,19 @@ namespace backendcafe.Migrations
                 name: "Settings");
 
             migrationBuilder.DropTable(
-                name: "Transactions");
+                name: "TableReservations");
 
             migrationBuilder.DropTable(
                 name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Transactions");
+
+            migrationBuilder.DropTable(
+                name: "Tables");
 
             migrationBuilder.DropTable(
                 name: "Categories");

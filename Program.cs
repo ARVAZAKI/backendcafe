@@ -28,6 +28,8 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddHttpClient<IMidtransService, MidtransService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IMidtransService, MidtransService>();
+builder.Services.AddScoped<ITableReservationService, TableReservationService>();
+builder.Services.AddScoped<ITableService, TableService>();
 // Konfigurasi JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

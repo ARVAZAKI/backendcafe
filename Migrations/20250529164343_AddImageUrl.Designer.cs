@@ -12,8 +12,8 @@ using backendcafe.Data;
 namespace backendcafe.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250529081533_AddTableReservationTablesv2")]
-    partial class AddTableReservationTablesv2
+    [Migration("20250529164343_AddImageUrl")]
+    partial class AddImageUrl
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -124,6 +124,11 @@ namespace backendcafe.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");

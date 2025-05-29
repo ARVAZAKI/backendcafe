@@ -30,6 +30,9 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IMidtransService, MidtransService>();
 builder.Services.AddScoped<ITableReservationService, TableReservationService>();
 builder.Services.AddScoped<ITableService, TableService>();
+builder.Services.AddScoped<IS3Service, S3Service>();
+builder.Services.Configure<AwsConfig>(builder.Configuration.GetSection("AWS"));
+
 // Konfigurasi JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

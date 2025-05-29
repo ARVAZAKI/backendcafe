@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "1Bhmt7uUwpI=",
+  "dgSpecHash": "AWRHIa/9xT0=",
   "success": true,
   "projectFilePath": "D:\\coding\\backendcafe\\backendcafe.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\arvazaki\\.nuget\\packages\\awssdk.core\\4.0.0.5\\awssdk.core.4.0.0.5.nupkg.sha512",
+    "C:\\Users\\arvazaki\\.nuget\\packages\\awssdk.s3\\4.0.0.7\\awssdk.s3.4.0.0.7.nupkg.sha512",
     "C:\\Users\\arvazaki\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\arvazaki\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\8.0.0\\microsoft.aspnetcore.authentication.jwtbearer.8.0.0.nupkg.sha512",
     "C:\\Users\\arvazaki\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.15\\microsoft.aspnetcore.openapi.8.0.15.nupkg.sha512",

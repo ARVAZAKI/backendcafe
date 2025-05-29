@@ -93,6 +93,8 @@ namespace backendcafe.Data
                       .HasMaxLength(100);
                 entity.Property(p => p.Stock)
                       .IsRequired();
+                  entity.Property(p => p.ImageUrl)
+                      .HasMaxLength(500);
                 entity.Property(p => p.Price)
                       .IsRequired();
                 entity.Property(p => p.Description)

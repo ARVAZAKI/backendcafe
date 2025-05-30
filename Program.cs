@@ -32,6 +32,10 @@ builder.Services.AddScoped<ISettingService, SettingService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddHttpClient<IMidtransService, MidtransService>();
 builder.Services.AddScoped<IMidtransService, MidtransService>();
+builder.Services.AddScoped<ITableReservationService, TableReservationService>();
+builder.Services.AddScoped<ITableService, TableService>();
+builder.Services.AddScoped<IS3Service, S3Service>();
+builder.Services.Configure<AwsConfig>(builder.Configuration.GetSection("AWS"));
 
 // Konfigurasi JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"];

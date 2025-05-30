@@ -17,7 +17,8 @@ namespace backendcafe.Data
         public DbSet<Setting> Settings { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
-
+      public DbSet<Table> Tables { get; set; }
+      public DbSet<TableReservation> TableReservations { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -92,6 +93,8 @@ namespace backendcafe.Data
                       .HasMaxLength(100);
                 entity.Property(p => p.Stock)
                       .IsRequired();
+                  entity.Property(p => p.ImageUrl)
+                      .HasMaxLength(500);
                 entity.Property(p => p.Price)
                       .IsRequired();
                 entity.Property(p => p.Description)
@@ -180,6 +183,94 @@ namespace backendcafe.Data
                 entity.HasIndex(t => t.TransactionCode)
                       .IsUnique();
             });
+
+            modelBuilder.Entity<Table>(entity =>
+            {
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.Id)
+                  .ValueGeneratedOnAdd()
+                  .HasColumnType("integer");
+            entity.Property(t => t.TableNumber)
+                  .IsRequired()
+                  .HasMaxLength(20);
+            entity.Property(t => t.Capacity)
+                  .IsRequired();
+            entity.Property(t => t.IsAvailable)
+                  .IsRequired();
+            entity.Property(t => t.BranchId)
+                  .IsRequired();
+            entity.Property(t => t.Description)
+                  .HasMaxLength(200);
+            entity.Property(t => t.CreatedAt)
+                  .IsRequired();
+            entity.Property(t => t.UpdatedAt)
+                  .IsRequired();
+            
+            // Unique constraint untuk kombinasi TableNumber dan BranchId
+            entity.HasIndex(t => new { t.TableNumber, t.BranchId })
+                  .IsUnique();
+            
+            // Foreign key relationship
+            entity.HasOne(t => t.Branch)
+                  .WithMany()
+                  .HasForeignKey(t => t.BranchId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<TableReservation>(entity =>
+{
+    entity.HasKey(tr => tr.Id);
+    entity.Property(tr => tr.Id)
+          .ValueGeneratedOnAdd()
+          .HasColumnType("integer");
+    entity.Property(tr => tr.ReservationCode)
+          .IsRequired()
+          .HasMaxLength(50);
+    entity.Property(tr => tr.CustomerName)
+          .IsRequired()
+          .HasMaxLength(100);
+    entity.Property(tr => tr.CustomerPhone)
+          .HasMaxLength(15);
+    entity.Property(tr => tr.CustomerEmail)
+          .HasMaxLength(100);
+    entity.Property(tr => tr.TableId)
+          .IsRequired();
+    entity.Property(tr => tr.BranchId)
+          .IsRequired();
+    entity.Property(tr => tr.ReservationDateTime)
+          .IsRequired();
+    entity.Property(tr => tr.DurationHours)
+          .IsRequired();
+    entity.Property(tr => tr.GuestCount)
+          .IsRequired();
+    entity.Property(tr => tr.Status)
+          .IsRequired()
+          .HasConversion<string>();
+    entity.Property(tr => tr.Notes)
+          .HasMaxLength(500);
+    entity.Property(tr => tr.CreatedBy)
+          .IsRequired()
+          .HasMaxLength(100);
+    entity.Property(tr => tr.CreatedAt)
+          .IsRequired();
+    entity.Property(tr => tr.UpdatedAt)
+          .IsRequired();
+    
+    // Unique constraint untuk ReservationCode
+    entity.HasIndex(tr => tr.ReservationCode)
+          .IsUnique();
+    
+    // Foreign key relationships
+    entity.HasOne(tr => tr.Table)
+          .WithMany()
+          .HasForeignKey(tr => tr.TableId)
+          .OnDelete(DeleteBehavior.Restrict);
+    
+    entity.HasOne(tr => tr.Branch)
+          .WithMany()
+          .HasForeignKey(tr => tr.BranchId)
+          .OnDelete(DeleteBehavior.Cascade);
+});
         }
     }
 }

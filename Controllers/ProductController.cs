@@ -46,7 +46,7 @@ namespace backendcafe.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin,SuperAdmin")]
-        public async Task<IActionResult> CreateProduct([FromBody] ProductCreateDTO productDto)
+        public async Task<IActionResult> CreateProduct([FromForm] ProductCreateDTO productDto)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace backendcafe.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,SuperAdmin")]
-        public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductUpdateDTO productDto)
+        public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpdateDTO productDto)
         {
             try
             {

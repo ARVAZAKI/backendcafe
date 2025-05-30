@@ -12,6 +12,9 @@ namespace backendcafe.DTO
         [Range(0, int.MaxValue, ErrorMessage = "Stock cannot be negative")]
         public int Stock { get; set; }
 
+        // Ganti ImageUrl dengan ImageFile untuk file upload
+        public IFormFile? ImageFile { get; set; }
+
         [Required(ErrorMessage = "Price is required")]
         [Range(1, int.MaxValue, ErrorMessage = "Price must be greater than zero")]
         public int Price { get; set; }
@@ -41,6 +44,10 @@ namespace backendcafe.DTO
         [Range(0, int.MaxValue, ErrorMessage = "Stock cannot be negative")]
         public int Stock { get; set; }
 
+        // Ganti ImageUrl dengan ImageFile untuk file upload
+        // Tidak required untuk update (opsional jika ingin ganti gambar)
+        public IFormFile? ImageFile { get; set; }
+
         [Required(ErrorMessage = "Price is required")]
         [Range(1, int.MaxValue, ErrorMessage = "Price must be greater than zero")]
         public int Price { get; set; }
@@ -65,6 +72,7 @@ namespace backendcafe.DTO
         public int Id { get; set; }
         public string Name { get; set; }
         public int Stock { get; set; }
+        public string? ImageUrl { get; set; } // Tetap ImageUrl untuk response
         public int Price { get; set; }
         public string Description { get; set; }
         public bool IsActive { get; set; }

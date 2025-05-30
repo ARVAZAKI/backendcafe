@@ -8,7 +8,7 @@ RUN dotnet restore
 
 # Copy everything else and build
 COPY . ./
-RUN dotnet build -c Release -o /app/build
+RUN dotnet build backendcafe.csproj -c Release -o /app/build
 
 # Publish stage  
 FROM build AS publish

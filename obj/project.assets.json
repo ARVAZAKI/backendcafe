@@ -15,7 +15,7 @@
           }
         }
       },
-      "AWSSDK.S3/4.0.0.7": {
+      "AWSSDK.S3/4.0.1": {
         "type": "package",
         "dependencies": {
           "AWSSDK.Core": "[4.0.0.5, 5.0.0)"
@@ -1285,17 +1285,17 @@
         "tools/account-management.ps1"
       ]
     },
-    "AWSSDK.S3/4.0.0.7": {
-      "sha512": "dFELsA+Y7aXmvCTL83+oIWmr+0s/GpkqCKZK1ac7HPdYQFv+QHEAhrXdCJknsCKqK+v0yefkLzuKuSSP6k4tmA==",
+    "AWSSDK.S3/4.0.1": {
+      "sha512": "+y1tfZF1oUNLhPtJos7aw858HpGqskyUooxKM/GWQqZvtdOldgi8mVpsipVPouQ7RHlQZ2EceoItfwpSAApJ5g==",
       "type": "package",
-      "path": "awssdk.s3/4.0.0.7",
+      "path": "awssdk.s3/4.0.1",
       "hasTools": true,
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
         "analyzers/dotnet/cs/SharedAnalysisCode.dll",
-        "awssdk.s3.4.0.0.7.nupkg.sha512",
+        "awssdk.s3.4.0.1.nupkg.sha512",
         "awssdk.s3.nuspec",
         "images/AWSLogo.png",
         "lib/net472/AWSSDK.S3.dll",
@@ -3840,7 +3840,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "AWSSDK.S3 >= 4.0.0.7",
+      "AWSSDK.S3 >= 4.0.1",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 8.0.0",
       "Microsoft.AspNetCore.OpenApi >= 8.0.15",
       "Microsoft.EntityFrameworkCore >= 9.0.4",
@@ -3896,7 +3896,7 @@
         "dependencies": {
           "AWSSDK.S3": {
             "target": "Package",
-            "version": "[4.0.0.7, )"
+            "version": "[4.0.1, )"
           },
           "Microsoft.AspNetCore.Authentication.JwtBearer": {
             "target": "Package",

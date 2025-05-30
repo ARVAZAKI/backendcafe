@@ -18,8 +18,8 @@ RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Install curl for health check
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install curl and postgresql-client for health check and wait-for-it
+RUN apt-get update && apt-get install -y curl postgresql-client && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security (optional, bisa diaktifkan nanti)
 # RUN groupadd -r appuser && useradd -r -g appuser appuser
@@ -27,8 +27,14 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 # Copy published app
 COPY --from=publish /app/publish .
 
-# Find and set the main application DLL name
+# Find and set the main application DLL name, and add wait-for-it logic
 RUN echo "#!/bin/sh" > /app/entrypoint.sh && \
+    echo "# Wait for database to be ready" >> /app/entrypoint.sh && \
+    echo "until pg_isready -h db -p 5432 -U ${DB_USER:-postgres} -d ${DB_NAME:-cafemobile}; do" >> /app/entrypoint.sh && \
+    echo "  echo 'Menunggu database siap...'" >> /app/entrypoint.sh && \
+    echo "  sleep 2" >> /app/entrypoint.sh && \
+    echo "done" >> /app/entrypoint.sh && \
+    echo "echo 'Database siap!'" >> /app/entrypoint.sh && \
     echo "# Find main application DLL (has runtimeconfig.json)" >> /app/entrypoint.sh && \
     echo "DLL_FILE=\$(find /app -name '*.runtimeconfig.json' | sed 's/.runtimeconfig.json/.dll/')" >> /app/entrypoint.sh && \
     echo "if [ -z \"\$DLL_FILE\" ] || [ ! -f \"\$DLL_FILE\" ]; then" >> /app/entrypoint.sh && \

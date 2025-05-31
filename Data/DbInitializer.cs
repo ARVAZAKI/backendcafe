@@ -19,6 +19,7 @@ namespace backendcafe.Data
             await UserSeeder.SeedAsync(context);
             await CategorySeeder.SeedAsync(context);
             await ProductSeeder.SeedAsync(context);
+            await TableSeeder.SeedAsync(context);
         }
     }
 }

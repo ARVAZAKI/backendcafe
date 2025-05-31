@@ -4,7 +4,8 @@ using backendcafe.Services;
 using backendcafe.DTO;
 using System;
 using System.Threading.Tasks;
-
+using System.Text.Json;
+using System.Text.Json.Serialization;
 namespace backendcafe.Controllers
 {
     [Route("api/[controller]")]
@@ -89,21 +90,42 @@ namespace backendcafe.Controllers
         }
 
         [HttpPost("notification")]
-        public async Task<IActionResult> HandlePaymentNotification([FromBody] MidtransNotificationDTO notification)
+        public async Task<IActionResult> HandlePaymentNotification()
+    {
+        try
         {
-            try
+            // Read raw request body
+            string requestBody;
+            using (var reader = new StreamReader(Request.Body))
             {
-                var result = await _transactionService.HandlePaymentNotificationAsync(notification);
-                return Ok(new { message = "Notification processed successfully", transaction = result });
+                requestBody = await reader.ReadToEndAsync();
             }
-            catch (Exception ex)
+
+            // Deserialize manually to handle potential issues
+            var notification = JsonSerializer.Deserialize<MidtransNotificationDTO>(requestBody, new JsonSerializerOptions
             {
-                // Log the error but return OK to Midtrans to prevent retry
-                // You should implement proper logging here
-                Console.WriteLine($"Notification processing error: {ex.Message}");
-                return Ok(new { message = "Notification received but processing failed" });
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (notification == null)
+            {
+                return BadRequest("Invalid notification format");
             }
+
+            var result = await _transactionService.HandlePaymentNotificationAsync(notification);
+            
+            return Ok(new { message = "Notification processed successfully", transaction = result });
         }
+        catch (JsonException jsonEx)
+        {
+            return Ok(new { message = "Notification received but format invalid" });
+        }
+        catch (Exception ex)
+        {
+            // Return OK to prevent Midtrans from retrying
+            return Ok(new { message = "Notification received but processing failed" });
+        }
+    }
 
         [HttpPut("status/{id}")]
         public async Task<IActionResult> UpdateTransactionStatus(int id, [FromBody] TransactionStatusUpdateDTO statusUpdateDto)

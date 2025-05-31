@@ -123,10 +123,10 @@ namespace backendcafe.DTO
     }
 
     // Notification DTO from Midtrans webhook
-    public class MidtransNotificationDTO
+     public class MidtransNotificationDTO
     {
         [JsonPropertyName("transaction_time")]
-        public DateTime TransactionTime { get; set; }
+        public string TransactionTime { get; set; } // Changed to string for better handling
 
         [JsonPropertyName("transaction_status")]
         public string TransactionStatus { get; set; }
@@ -162,7 +162,38 @@ namespace backendcafe.DTO
         public string Currency { get; set; }
 
         [JsonPropertyName("settlement_time")]
-        public DateTime? SettlementTime { get; set; }
+        public string SettlementTime { get; set; } // Changed to string
+
+        // Additional fields that might come from Midtrans
+        [JsonPropertyName("transaction_type")]
+        public string TransactionType { get; set; }
+
+        [JsonPropertyName("issuer")]
+        public string Issuer { get; set; }
+
+        [JsonPropertyName("acquirer")]
+        public string Acquirer { get; set; }
+
+        [JsonPropertyName("expiry_time")]
+        public string ExpiryTime { get; set; }
+
+        // Helper methods to convert string dates to DateTime
+        public DateTime? GetTransactionDateTime()
+        {
+            if (DateTime.TryParse(TransactionTime, out DateTime result))
+                return result;
+            return null;
+        }
+
+        public DateTime? GetSettlementDateTime()
+        {
+            if (string.IsNullOrEmpty(SettlementTime))
+                return null;
+            
+            if (DateTime.TryParse(SettlementTime, out DateTime result))
+                return result;
+            return null;
+        }
     }
 
     // DTO for creating payment request

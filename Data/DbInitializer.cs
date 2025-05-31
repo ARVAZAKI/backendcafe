@@ -61,21 +61,12 @@ namespace backendcafe.Data
                 }
             }
 
-            // Jalankan seeding
-            try
-            {
-                Console.WriteLine("Memulai seeding data...");
-                await BranchSeeder.SeedAsync(context);
-                await UserSeeder.SeedAsync(context);
-                await CategorySeeder.SeedAsync(context);
-                await ProductSeeder.SeedAsync(context);
-                Console.WriteLine("Seeding data selesai.");
-            }
-            catch (Exception seedEx)
-            {
-                Console.WriteLine($"Error seeding: {seedEx.Message}");
-                throw;
-            }
+        
+            await BranchSeeder.SeedAsync(context);
+            await UserSeeder.SeedAsync(context);
+            await CategorySeeder.SeedAsync(context);
+            await ProductSeeder.SeedAsync(context);
+            await TableSeeder.SeedAsync(context);
         }
     }
 }

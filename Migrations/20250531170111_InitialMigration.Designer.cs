@@ -12,7 +12,7 @@ using backendcafe.Data;
 namespace backendcafe.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250530154611_InitialMigration")]
+    [Migration("20250531170111_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />

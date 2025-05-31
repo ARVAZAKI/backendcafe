@@ -173,51 +173,56 @@ namespace backendcafe.Services
             }
         }
 
-        public async Task<TransactionResponseDTO> HandlePaymentNotificationAsync(MidtransNotificationDTO notification)
+        
+    public async Task<TransactionResponseDTO> HandlePaymentNotificationAsync(MidtransNotificationDTO notification)
+    {
+        try
         {
-            try
+            // Verify notification signature
+            var isValid = await _midtransService.VerifyNotificationAsync(notification);
+            if (!isValid)
             {
-                // Verify notification signature
-                var isValid = await _midtransService.VerifyNotificationAsync(notification);
-                if (!isValid)
-                    throw new Exception("Invalid notification signature");
+                throw new Exception("Invalid notification signature");
+            }
 
-                // Find transaction by order ID (transaction code)
-                var transaction = await _context.Transactions
-                    .FirstOrDefaultAsync(t => t.TransactionCode == notification.OrderId);
+            // Find transaction by order ID (transaction code)
+            var transaction = await _context.Transactions
+                .FirstOrDefaultAsync(t => t.TransactionCode == notification.OrderId);
 
-                if (transaction == null)
-                    throw new Exception("Transaction not found");
+            if (transaction == null)
+            {
+                throw new Exception("Transaction not found");
+            }
 
-                // Update transaction status based on Midtrans status
-                var newStatus = MapMidtransStatusToTransactionStatus(notification.TransactionStatus, notification.FraudStatus);
-                
-                if (transaction.Status != newStatus)
+            // Update transaction status based on Midtrans status
+            var newStatus = MapMidtransStatusToTransactionStatus(notification.TransactionStatus, notification.FraudStatus);
+
+            if (transaction.Status != newStatus)
+            {
+                transaction.Status = newStatus;
+
+                // If payment is successful
+                if (newStatus == "Paid")
                 {
-                    transaction.Status = newStatus;
-                    
-                    // If payment is successful, you might want to do additional processing
-                    if (newStatus == "Paid")
-                    {
-                        // Add any additional logic for successful payment
-                        // e.g., send email confirmation, update inventory, etc.
-                    }
-                    else if (newStatus == "Failed" || newStatus == "Cancelled")
-                    {
-                        // Restore product stock if payment failed
-                        await RestoreProductStockAsync(transaction.Id);
-                    }
-
-                    await _context.SaveChangesAsync();
+                    // Add any additional logic for successful payment
+                    // e.g., send email confirmation, update inventory, etc.
+                }
+                else if (newStatus == "Failed" || newStatus == "Cancelled")
+                {
+                    // Restore product stock if payment failed
+                    await RestoreProductStockAsync(transaction.Id);
                 }
 
-                return await GetTransactionByIdAsync(transaction.Id);
+                await _context.SaveChangesAsync();
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to handle payment notification: {ex.Message}");
-            }
+
+            return await GetTransactionByIdAsync(transaction.Id);
         }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to handle payment notification: {ex.Message}");
+        }
+    }
 
         public async Task<TransactionResponseDTO> GetTransactionByOrderIdAsync(string orderId)
         {
@@ -349,20 +354,34 @@ namespace backendcafe.Services
             await _context.SaveChangesAsync();
         }
 
-        private string MapMidtransStatusToTransactionStatus(string transactionStatus, string fraudStatus)
+            private string MapMidtransStatusToTransactionStatus(string transactionStatus, string fraudStatus)
+    {
+        // Handle fraud status first
+        if (!string.IsNullOrEmpty(fraudStatus))
         {
-            return transactionStatus?.ToLower() switch
+            switch (fraudStatus.ToLower())
             {
-                "capture" => fraudStatus == "challenge" ? "Challenge" : "Paid",
-                "settlement" => "Paid",
-                "pending" => "Waiting Payment",
-                "deny" => "Failed",
-                "cancel" => "Cancelled",
-                "expire" => "Expired",
-                "failure" => "Failed",
-                _ => "Unknown"
-            };
+                case "challenge":
+                    return "Pending"; // Need manual review
+                case "deny":
+                    return "Failed";
+            }
         }
+
+        // Map transaction status
+        return transactionStatus?.ToLower() switch
+        {
+            "capture" => "Paid",
+            "settlement" => "Paid",
+            "pending" => "Pending",
+            "deny" => "Failed",
+            "cancel" => "Cancelled",
+            "expire" => "Expired",
+            "failure" => "Failed",
+            _ => "Pending"
+        };
+    }
+
 
         private string GenerateTransactionCode()
         {

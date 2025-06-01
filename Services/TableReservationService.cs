@@ -22,7 +22,6 @@ namespace backendcafe.Services
                 .Include(r => r.Table)
                 .Include(r => r.Branch)
                 .Select(r => MapToReadDTO(r))
-                .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
 
@@ -33,7 +32,6 @@ namespace backendcafe.Services
                 .Include(r => r.Branch)
                 .Where(r => r.BranchId == branchId)
                 .Select(r => MapToReadDTO(r))
-                .OrderByDescending(r => r.ReservationDateTime)
                 .ToListAsync();
         }
 
@@ -237,7 +235,6 @@ namespace backendcafe.Services
                            r.ReservationDateTime >= today && 
                            r.ReservationDateTime < tomorrow)
                 .Select(r => MapToReadDTO(r))
-                .OrderBy(r => r.ReservationDateTime)
                 .ToListAsync();
         }
 
@@ -254,7 +251,6 @@ namespace backendcafe.Services
                            r.ReservationDateTime < futureDate &&
                            (r.Status == ReservationStatus.Confirmed || r.Status == ReservationStatus.Pending))
                 .Select(r => MapToReadDTO(r))
-                .OrderBy(r => r.ReservationDateTime)
                 .ToListAsync();
         }
 
